@@ -1,0 +1,7 @@
+body              {font-family: 'メイリオ',
+                  'Hiragino Kaku Gothic Pro',
+                  sans-serif;
+                  background-color: #000000;}
+
+canvas            {position: absolute;
+                  background-color: transparent;}
