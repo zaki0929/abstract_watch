@@ -1,11 +1,9 @@
 var AW = AW || {};
 
-window.addEventListener("load", function(){
+window.addEventListener("load", function() {
 
     AW.width  = window.innerWidth;
     AW.height = window.innerHeight;
-
-    AW.offColor = '#333';
 
     AW.stage = new Konva.Stage({
         container: 'container',
@@ -23,67 +21,65 @@ window.addEventListener("load", function(){
     AW.minArray   = [];
     AW.secArray   = [];
 
-    AW.buildUnit = function(array, layer, x, y, r, color) {
-        var onColor  = color;
-        var offColor = AW.offColor;
+    AW.buildUnit = function(array, layer, x, y, r, baseColor, lightColor) {
+        var unit = {};
 
-        var base = new Konva.Circle({
+        unit.base = new Konva.Circle({
             x: x,
             y: y,
             radius: r,
-            fill: offColor,
+            fill: baseColor,
             strokeWidth: 0 
         });
-	layer.add(base);
+        layer.add(unit.base);
 
-        var unit = new Konva.Circle({
+        unit.light = new Konva.Circle({
             x: x,
             y: y,
             radius: 0,
-            fill: onColor,
+            fill: lightColor,
             strokeWidth: 0 
         });
-	layer.add(unit);
+        layer.add(unit.light);
 
-        var tween = new Konva.Tween({
-            node: unit,
+        unit.tween = new Konva.Tween({
+            node: unit.light,
             duration: 0.5,
-            fill : onColor,
             radius: r*0.5 
         });
 
-	unit.turnON = function () {
-	    tween.play();
-	}
+        unit.turnON = function() {
+            this.tween.play();
+        }
 
-	unit.turnOFF = function () {
-	    tween.reset();
-	}
-	array.push(unit);
+        unit.turnOFF = function() {
+            this.tween.reset();
+        }
+
+        array.push(unit);
     }
 
-    AW.buildUnitsBar = function (array, layer, num, x, y, r, d, color) {
+    AW.buildUnitsBar = function(array, layer, num, x, y, r, d, baseColor, lightColor) {
         for (var i=0; i<num; i++) {
-            AW.buildUnit(array, layer, x+(d*i), y, r, color);
+            AW.buildUnit(array, layer, x+(d*i), y, r, baseColor, lightColor);
         }
     }
 
-    AW.buildUnitsBar(AW.monthArray, AW.unitLayer, 12, AW.width/(59+3)*2, 100, AW.width/(59+3)*0.4, AW.width/(59+3), '#F0BC08');
-    AW.buildUnitsBar(AW.dateArray,  AW.unitLayer, 31, AW.width/(59+3)*2, 150, AW.width/(59+3)*0.4, AW.width/(59+3), '#F0BC08');
-    AW.buildUnitsBar(AW.dayArray,   AW.unitLayer, 7,  AW.width/(59+3)*2, 200, AW.width/(59+3)*0.4, AW.width/(59+3), '#F0BC08');
-    AW.buildUnitsBar(AW.hourArray,  AW.unitLayer, 23, AW.width/(59+3)*2, 250, AW.width/(59+3)*0.4, AW.width/(59+3), '#F0BC08');
-    AW.buildUnitsBar(AW.minArray,   AW.unitLayer, 59, AW.width/(59+3)*2, 300, AW.width/(59+3)*0.4, AW.width/(59+3), '#F0BC08');
-    AW.buildUnitsBar(AW.secArray,   AW.unitLayer, 59, AW.width/(59+3)*2, 350, AW.width/(59+3)*0.4, AW.width/(59+3), '#F0BC08');
+    AW.getLastDay = function() {
+        var now     = new Date();
+        var lastDay = new Date(now.getYear(), now.getMonth()+1, 0);
+        return lastDay.getDate();
+    }
 
     AW.update = function() {
-        var now  = new Date()
+        var now  = new Date();
 
-	AW.updateUnits(now.getMonth(),   AW.monthArray, false);
-	AW.updateUnits(now.getDate(),    AW.dateArray, true);
-	AW.updateUnits(now.getDay(),     AW.dayArray, false);
-	AW.updateUnits(now.getHours(),   AW.hourArray, true);
-	AW.updateUnits(now.getMinutes(), AW.minArray, true);
-	AW.updateUnits(now.getSeconds(), AW.secArray, true);
+        AW.updateUnits(now.getMonth(),   AW.monthArray, false);
+        AW.updateUnits(now.getDate(),    AW.dateArray,  true);
+        AW.updateUnits(now.getDay(),     AW.dayArray,   false);
+        AW.updateUnits(now.getHours(),   AW.hourArray,  true);
+        AW.updateUnits(now.getMinutes(), AW.minArray,   true);
+        AW.updateUnits(now.getSeconds(), AW.secArray,   true);
         AW.unitLayer.draw();
     }
 
@@ -94,8 +90,22 @@ window.addEventListener("load", function(){
             } else {
                 array[i].turnOFF();
             }
-	}
+        }
     }
+
+    AW.opt = {
+        x:  AW.width/(59+3)*2,
+        r:  AW.width/(59+3)*0.4,
+        d:  AW.width/(59+3),
+        ld: AW.getLastDay()
+    }
+
+    AW.buildUnitsBar(AW.monthArray, AW.unitLayer, 12,        AW.opt.x, 100, AW.opt.r, AW.opt.d, '#333', '#F0BC08');
+    AW.buildUnitsBar(AW.dateArray,  AW.unitLayer, AW.opt.ld, AW.opt.x, 150, AW.opt.r, AW.opt.d, '#333', '#F0BC08');
+    AW.buildUnitsBar(AW.dayArray,   AW.unitLayer, 7,         AW.opt.x, 200, AW.opt.r, AW.opt.d, '#333', '#F0BC08');
+    AW.buildUnitsBar(AW.hourArray,  AW.unitLayer, 23,        AW.opt.x, 250, AW.opt.r, AW.opt.d, '#333', '#F0BC08');
+    AW.buildUnitsBar(AW.minArray,   AW.unitLayer, 59,        AW.opt.x, 300, AW.opt.r, AW.opt.d, '#333', '#F0BC08');
+    AW.buildUnitsBar(AW.secArray,   AW.unitLayer, 59,        AW.opt.x, 350, AW.opt.r, AW.opt.d, '#333', '#F0BC08');
 
     setInterval(AW.update, 1000);
 });
